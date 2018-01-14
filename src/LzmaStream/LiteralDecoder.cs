@@ -8,7 +8,7 @@
 
         private BitDecoder[,] Decoders { get; }
 
-        public LiteralDecoder(int numPosBits, int numPrevBits)
+        public LiteralDecoder(in int numPosBits, in int numPrevBits)
         {
             NumPosBits = numPosBits;
             PosMask = (1u << numPosBits) - 1;
@@ -17,10 +17,10 @@
             Decoders = new BitDecoder[numStates, 0x300];
         }
 
-        private uint GetState(uint pos, byte prevByte) =>
+        private uint GetState(in uint pos, in byte prevByte) =>
             ((pos & PosMask) << NumPrevBits) + (uint)(prevByte >> (8 - NumPrevBits));
 
-        public byte DecodeNormal(StreamRangeReader rangeReader, uint pos, byte prevByte)
+        public byte DecodeNormal(in StreamRangeReader rangeReader, in uint pos, in byte prevByte)
         {
             var symbol = 1u;
             var state = GetState(pos, prevByte);
@@ -33,7 +33,7 @@
             return (byte)symbol;
         }
 
-        public byte DecodeWithMatchByte(StreamRangeReader rangeReader, uint pos, byte prevByte, byte matchByte)
+        public byte DecodeWithMatchByte(in StreamRangeReader rangeReader, in uint pos, in byte prevByte, byte matchByte)
         {
             var symbol = 1u;
             var state = GetState(pos, prevByte);

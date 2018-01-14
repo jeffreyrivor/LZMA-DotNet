@@ -14,16 +14,18 @@
             set => _prob = value;
         }
 
-        public uint Decode(in StreamRangeReader rangeReader)
+        public uint Decode(in StreamRangeReader rangeReader) => DecodeBool(rangeReader) ? 1u : 0u;
+
+        public bool DecodeBool(in StreamRangeReader rangeReader)
         {
-            if (rangeReader.Decode(Prob, kNumBitModelTotalBits) == 0)
+            if (rangeReader.Decode(Prob, kNumBitModelTotalBits))
             {
-                Prob += (kBitModelTotal - Prob) >> kNumMoveBits;
-                return 0;
+                Prob -= Prob >> kNumMoveBits;
+                return true;
             }
 
-            Prob -= Prob >> kNumMoveBits;
-            return 1;
+            Prob += (kBitModelTotal - Prob) >> kNumMoveBits;
+            return false;
         }
     }
 }

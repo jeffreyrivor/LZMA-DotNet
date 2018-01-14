@@ -29,14 +29,14 @@
 
         public uint Decode(in StreamRangeReader rangeReader, in uint posState)
         {
-            if (Choice.Decode(rangeReader) == 0)
+            if (!Choice.DecodeBool(rangeReader))
             {
                 return LowCoders[posState].Decode(rangeReader);
             }
 
             var symbol = kNumLowLenSymbols;
 
-            if (Choice2.Decode(rangeReader) == 0)
+            if (!Choice2.DecodeBool(rangeReader))
             {
                 symbol += MidCoders[posState].Decode(rangeReader);
             }

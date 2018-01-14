@@ -65,7 +65,7 @@ namespace Lzma
         private uint CopyBlockPos;
         private uint CopyBlockLen;
 
-        public StreamDecoder(Stream stream)
+        public StreamDecoder(in Stream stream)
         {
             var pb = Math.DivRem(Math.DivRem(stream.ReadByte(), 9, out var lc), 5, out var lp);
 
@@ -114,7 +114,7 @@ namespace Lzma
 
             if (NumDecoded == 0)
             {
-                if (IsMatchDecoders[State.Index << kNumPosStatesBitsMax].Decode(RangeReader) != 0)
+                if (IsMatchDecoders[State.Index << kNumPosStatesBitsMax].DecodeBool(RangeReader))
                 {
                     throw new InvalidDataException();
                 }
@@ -134,7 +134,7 @@ namespace Lzma
             while (NumDecoded < OutSize && outputCount < count && offset + outputCount < buffer.Length)
             {
                 var posState = NumDecoded & PosStateMask;
-                if (IsMatchDecoders[(State.Index << kNumPosStatesBitsMax) + posState].Decode(RangeReader) == 0)
+                if (!IsMatchDecoders[(State.Index << kNumPosStatesBitsMax) + posState].DecodeBool(RangeReader))
                 {
                     var prevByte = GetByte(0);
 
@@ -147,11 +147,11 @@ namespace Lzma
                 }
                 else
                 {
-                    if (IsRepDecoders[State.Index].Decode(RangeReader) == 1)
+                    if (IsRepDecoders[State.Index].DecodeBool(RangeReader))
                     {
-                        if (IsRepG0Decoders[State.Index].Decode(RangeReader) == 0)
+                        if (!IsRepG0Decoders[State.Index].DecodeBool(RangeReader))
                         {
-                            if (IsRep0LongDecoders[(State.Index << kNumPosStatesBitsMax) + posState].Decode(RangeReader) == 0)
+                            if (!IsRep0LongDecoders[(State.Index << kNumPosStatesBitsMax) + posState].DecodeBool(RangeReader))
                             {
                                 PutByte(buffer, offset + outputCount++, GetByte(Rep0));
                                 State.UpdateShortRep();
@@ -162,13 +162,13 @@ namespace Lzma
                         {
                             uint distance;
 
-                            if (IsRepG1Decoders[State.Index].Decode(RangeReader) == 0)
+                            if (!IsRepG1Decoders[State.Index].DecodeBool(RangeReader))
                             {
                                 distance = Rep1;
                             }
                             else
                             {
-                                if (IsRepG2Decoders[State.Index].Decode(RangeReader) == 0)
+                                if (!IsRepG2Decoders[State.Index].DecodeBool(RangeReader))
                                 {
                                     distance = Rep2;
                                 }
@@ -242,7 +242,7 @@ namespace Lzma
             return outputCount;
         }
 
-        private byte GetByte(uint distance)
+        private byte GetByte(in uint distance)
         {
             var pos = OutBlockPos - distance - 1;
             if (pos >= BlockSize)

@@ -17,13 +17,13 @@ namespace Lzma
 
             if (Stream.ReadByte() != 0)
             {
-                throw new Exception();
+                throw new InvalidDataException();
             }
 
             var buffer = new byte[sizeof(uint)];
             if (Stream.Read(buffer, 0, sizeof(uint)) != sizeof(uint))
             {
-                throw new Exception();
+                throw new InvalidDataException();
             }
 
             if (BitConverter.IsLittleEndian)
@@ -34,7 +34,7 @@ namespace Lzma
             Code = BitConverter.ToUInt32(buffer, 0);
             if (Code == Range)
             {
-                throw new Exception();
+                throw new InvalidDataException();
             }
         }
 
@@ -49,20 +49,20 @@ namespace Lzma
             }
         }
 
-        public uint Decode(in uint size0, in int numTotalBits)
+        public bool Decode(in uint size0, in int numTotalBits)
         {
             var newBound = (Range >> numTotalBits) * size0;
             if (Code < newBound)
             {
                 Range = newBound;
                 Normalize();
-                return 0;
+                return false;
             }
 
             Range -= newBound;
             Code -= newBound;
             Normalize();
-            return 1;
+            return true;
         }
 
         public uint DecodeDirectBits(int numTotalBits)

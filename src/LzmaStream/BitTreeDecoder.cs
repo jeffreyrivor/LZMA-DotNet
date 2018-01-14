@@ -16,7 +16,7 @@
             var m = 1u;
             for (var i = NumBitLevels; i > 0; i--)
             {
-                m = (m << 1) + Models[m].Decode(rangeReader);
+                m = (m << 1) | Models[m].Decode(rangeReader);
             }
 
             return m - (1u << NumBitLevels);
